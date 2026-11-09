@@ -10,33 +10,54 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.HelpOutline
+import androidx.compose.material.icons.automirrored.outlined.Label
 import androidx.compose.material.icons.automirrored.outlined.PlaylistPlay
-import androidx.compose.material.icons.outlined.Cloud
-import androidx.compose.material.icons.outlined.ColorLens
+import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.Public
 import androidx.compose.material.icons.outlined.Settings
-import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.outlined.Storage
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.npplayer.core.data.database.dao.LabelWithCount
+import com.npplayer.core.ui.component.NpLogo
+import com.npplayer.core.ui.component.NpLogoVariant
+import com.npplayer.core.ui.theme.NPBlack
+import com.npplayer.core.ui.theme.NPWhite
 import com.npplayer.core.ui.theme.NPYellow
 
 @Composable
@@ -44,16 +65,29 @@ fun MenuScreen(
     onBack: () -> Unit,
     onNavigateToSettings: () -> Unit,
     onNavigateToPrivate: () -> Unit,
-    onNavigateToNetwork: () -> Unit
+    onNavigateToNetwork: () -> Unit,
+    onNavigateToPlaylists: () -> Unit = {},
+    onNavigateToMediaManager: () -> Unit = {},
+    onNavigateToHelpFaq: () -> Unit = {},
+    onNavigateToLegalAbout: () -> Unit = {},
+    viewModel: MenuViewModel = hiltViewModel()
 ) {
+    val labelsWithCount by viewModel.labelsWithCount.collectAsState()
+    var showLabelsSheet by remember { mutableStateOf(false) }
+
     Scaffold(
         topBar = {
             Surface(
-                modifier = Modifier.fillMaxWidth().height(64.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .statusBarsPadding()
+                    .height(64.dp),
                 color = MaterialTheme.colorScheme.background
             ) {
                 Row(
-                    modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconButton(onClick = onBack) {
@@ -83,6 +117,25 @@ fun MenuScreen(
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             item {
+                Surface(
+                    shape = RoundedCornerShape(16.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant,
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        NpLogo(
+                            variant = NpLogoVariant.HORIZONTAL,
+                            size = 36.dp,
+                            showTagline = true
+                        )
+                    }
+                }
+            }
+            item {
                 MenuTile(
                     icon = Icons.Outlined.Lock,
                     title = "Private Vault",
@@ -103,15 +156,15 @@ fun MenuScreen(
                     icon = Icons.AutoMirrored.Outlined.PlaylistPlay,
                     title = "Video Playlists",
                     subtitle = "Custom queues and playlists",
-                    onClick = {}
+                    onClick = onNavigateToPlaylists
                 )
             }
             item {
                 MenuTile(
-                    icon = Icons.Outlined.Share,
-                    title = "File Transfer",
-                    subtitle = "Fast Wi-Fi direct phone-to-phone / PC",
-                    onClick = {}
+                    icon = Icons.AutoMirrored.Outlined.Label,
+                    title = "Labels & Tags",
+                    subtitle = "Organize videos with custom tags (${labelsWithCount.size} active)",
+                    onClick = { showLabelsSheet = true }
                 )
             }
             item {
@@ -119,15 +172,7 @@ fun MenuScreen(
                     icon = Icons.Outlined.Storage,
                     title = "Media Manager",
                     subtitle = "Storage analyzer, duplicates & large files",
-                    onClick = {}
-                )
-            }
-            item {
-                MenuTile(
-                    icon = Icons.Outlined.Cloud,
-                    title = "Cloud Drive",
-                    subtitle = "Google Drive, OneDrive, Dropbox",
-                    onClick = {}
+                    onClick = onNavigateToMediaManager
                 )
             }
             item {
@@ -143,7 +188,7 @@ fun MenuScreen(
                     icon = Icons.AutoMirrored.Outlined.HelpOutline,
                     title = "Help & FAQ",
                     subtitle = "Usage guides and tips",
-                    onClick = {}
+                    onClick = onNavigateToHelpFaq
                 )
             }
             item {
@@ -151,8 +196,184 @@ fun MenuScreen(
                     icon = Icons.Outlined.Info,
                     title = "Legal & About",
                     subtitle = "Version 1.0.0 • Open-source licenses",
-                    onClick = {}
+                    onClick = onNavigateToLegalAbout
                 )
+            }
+        }
+    }
+
+    if (showLabelsSheet) {
+        LabelsManagerBottomSheet(
+            labels = labelsWithCount,
+            onCreateLabel = { viewModel.createLabel(it) },
+            onDeleteLabel = { viewModel.deleteLabel(it) },
+            onDismiss = { showLabelsSheet = false }
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun LabelsManagerBottomSheet(
+    labels: List<LabelWithCount>,
+    onCreateLabel: (String) -> Unit,
+    onDeleteLabel: (Long) -> Unit,
+    onDismiss: () -> Unit
+) {
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    var newLabelText by remember { mutableStateOf("") }
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        containerColor = NPBlack,
+        shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp)
+                .padding(bottom = 32.dp)
+        ) {
+            // Header
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Outlined.Label,
+                    contentDescription = null,
+                    tint = NPYellow,
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(
+                    text = "Labels & Tags",
+                    color = NPWhite,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            // Create Label Row
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                OutlinedTextField(
+                    value = newLabelText,
+                    onValueChange = { newLabelText = it },
+                    placeholder = {
+                        Text(
+                            text = "New label name...",
+                            fontSize = 14.sp,
+                            color = NPWhite.copy(alpha = 0.5f)
+                        )
+                    },
+                    singleLine = true,
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = NPYellow,
+                        unfocusedBorderColor = NPWhite.copy(alpha = 0.25f),
+                        cursorColor = NPYellow,
+                        focusedTextColor = NPWhite,
+                        unfocusedTextColor = NPWhite
+                    ),
+                    modifier = Modifier.weight(1f)
+                )
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                Button(
+                    onClick = {
+                        if (newLabelText.isNotBlank()) {
+                            onCreateLabel(newLabelText)
+                            newLabelText = ""
+                        }
+                    },
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = NPYellow,
+                        contentColor = NPBlack
+                    ),
+                    modifier = Modifier.height(52.dp)
+                ) {
+                    Icon(imageVector = Icons.Outlined.Add, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("ADD", fontWeight = FontWeight.Bold)
+                }
+            }
+
+            // Labels List
+            if (labels.isEmpty()) {
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = NPWhite.copy(alpha = 0.05f),
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp)
+                ) {
+                    Text(
+                        text = "No custom labels yet. Type a name above and tap ADD to create your first tag.",
+                        color = NPWhite.copy(alpha = 0.6f),
+                        fontSize = 13.sp,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(labels, key = { it.id }) { item ->
+                        Surface(
+                            shape = RoundedCornerShape(10.dp),
+                            color = NPWhite.copy(alpha = 0.08f),
+                            border = BorderStroke(1.dp, NPWhite.copy(alpha = 0.12f)),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Outlined.Label,
+                                    contentDescription = null,
+                                    tint = NPYellow,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = item.name,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 14.sp,
+                                        color = NPWhite
+                                    )
+                                    Text(
+                                        text = "${item.videoCount} videos tagged",
+                                        fontSize = 11.sp,
+                                        color = NPWhite.copy(alpha = 0.6f)
+                                    )
+                                }
+
+                                IconButton(
+                                    onClick = { onDeleteLabel(item.id) },
+                                    modifier = Modifier.size(36.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.Delete,
+                                        contentDescription = "Delete label",
+                                        tint = NPWhite.copy(alpha = 0.7f),
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }

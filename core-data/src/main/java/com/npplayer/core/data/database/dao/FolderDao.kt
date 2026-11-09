@@ -12,6 +12,9 @@ interface FolderDao {
     @Query("SELECT * FROM folders ORDER BY lastPlayedTimestamp DESC, name ASC")
     fun getAllFolders(): Flow<List<FolderEntity>>
 
+    @Query("SELECT * FROM folders WHERE name LIKE '%' || :query || '%' ORDER BY lastPlayedTimestamp DESC, name ASC")
+    fun searchFolders(query: String): Flow<List<FolderEntity>>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertFolders(folders: List<FolderEntity>)
 

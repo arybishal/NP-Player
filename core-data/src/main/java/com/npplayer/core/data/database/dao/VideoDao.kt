@@ -16,6 +16,12 @@ interface VideoDao {
     @Query("SELECT * FROM videos ORDER BY dateModified DESC")
     fun getAllVideos(): Flow<List<VideoEntity>>
 
+    @Query("SELECT * FROM videos WHERE title LIKE '%' || :query || '%' OR folderName LIKE '%' || :query || '%' ORDER BY dateModified DESC")
+    fun searchVideos(query: String): Flow<List<VideoEntity>>
+
+    @Query("SELECT * FROM videos WHERE lastPlayedPositionMs > 0 ORDER BY lastPlayedTimestamp DESC LIMIT :limit")
+    fun getRecentlyPlayedVideos(limit: Int = 10): Flow<List<VideoEntity>>
+
     @Query("SELECT * FROM videos WHERE id = :id LIMIT 1")
     suspend fun getVideoById(id: Long): VideoEntity?
 
@@ -36,4 +42,7 @@ interface VideoDao {
 
     @Query("DELETE FROM videos WHERE id = :id")
     suspend fun deleteVideoById(id: Long)
+
+    @Query("UPDATE videos SET lastPlayedPositionMs = 0, lastPlayedTimestamp = 0")
+    suspend fun clearAllPlaybackHistory()
 }

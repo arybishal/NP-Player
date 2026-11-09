@@ -9,7 +9,8 @@ import androidx.room.PrimaryKey
     indices = [
         Index(value = ["folderPath"]),
         Index(value = ["dateModified"]),
-        Index(value = ["title"])
+        Index(value = ["title"]),
+        Index(value = ["folderName"])
     ]
 )
 data class VideoEntity(

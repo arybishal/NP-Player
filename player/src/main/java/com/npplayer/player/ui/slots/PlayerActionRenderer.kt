@@ -3,6 +3,7 @@ package com.npplayer.player.ui.slots
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.PlaylistPlay
+import androidx.compose.material.icons.automirrored.outlined.VolumeOff
 import androidx.compose.material.icons.automirrored.outlined.VolumeUp
 import androidx.compose.material.icons.outlined.AspectRatio
 import androidx.compose.material.icons.outlined.BatteryChargingFull
@@ -26,7 +27,7 @@ import androidx.compose.material.icons.outlined.SettingsSystemDaydream
 import androidx.compose.material.icons.outlined.Speed
 import androidx.compose.material.icons.outlined.Subtitles
 import androidx.compose.material.icons.outlined.Translate
-import androidx.compose.material.icons.outlined.VolumeOff
+import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
@@ -53,6 +54,7 @@ fun getActionIcon(action: PlayerAction): ImageVector {
         PlayerAction.FRAMERATE_MEMC -> Icons.Outlined.MotionPhotosOn
         PlayerAction.BATTERY_SAVER -> Icons.Outlined.BatteryChargingFull
         PlayerAction.QUALITY_HD -> Icons.Outlined.Hd
+        PlayerAction.PICTURE_QUALITY -> Icons.Outlined.Tune
         PlayerAction.AUDIO_TRACK -> Icons.Outlined.Translate
         PlayerAction.ASPECT_RATIO -> Icons.Outlined.AspectRatio
         PlayerAction.PIP -> Icons.Outlined.PictureInPicture
@@ -61,7 +63,7 @@ fun getActionIcon(action: PlayerAction): ImageVector {
         PlayerAction.BACKGROUND_PLAY -> Icons.Outlined.Headphones
         PlayerAction.AUDIO_ONLY -> Icons.Outlined.MusicNote
         PlayerAction.MIRROR_FLIP -> Icons.Outlined.Flip
-        PlayerAction.MUTE -> Icons.Outlined.VolumeOff
+        PlayerAction.MUTE -> Icons.AutoMirrored.Outlined.VolumeOff
         PlayerAction.MORE -> Icons.Outlined.MoreVert
         PlayerAction.DECODER_MODE -> Icons.Outlined.SettingsSystemDaydream
     }

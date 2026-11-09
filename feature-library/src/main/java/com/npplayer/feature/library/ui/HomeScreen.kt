@@ -5,6 +5,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,7 +17,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -60,6 +63,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.npplayer.core.data.database.entity.FolderEntity
 import com.npplayer.core.ui.component.NPFilterChip
 import com.npplayer.core.ui.component.NPNewBadge
+import com.npplayer.core.ui.component.NpLogo
+import com.npplayer.core.ui.component.NpLogoVariant
 import com.npplayer.core.ui.theme.NPBlack
 import com.npplayer.core.ui.theme.NPYellow
 
@@ -70,18 +75,22 @@ fun HomeScreen(
     onResumeClick: (videoPath: String, videoTitle: String) -> Unit,
     onPrivateClick: () -> Unit,
     onNetworkClick: () -> Unit,
+    onPlaylistsClick: () -> Unit = {},
+    onSearchClick: () -> Unit = {},
+    onMusicClick: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
+    val currentMusicSong by viewModel.currentSong.collectAsState()
+    val isMusicPlaying by viewModel.isMusicPlaying.collectAsState()
+    val musicPositionMs by viewModel.musicCurrentPositionMs.collectAsState()
+    val musicDurationMs by viewModel.musicDurationMs.collectAsState()
 
     Scaffold(
         topBar = {
             Column(modifier = Modifier.fillMaxWidth()) {
                 HomeTopAppBar(
-                    isSearchActive = state.isSearchActive,
-                    searchQuery = state.searchQuery,
-                    onSearchQueryChange = { viewModel.setSearchQuery(it) },
-                    onToggleSearch = { viewModel.toggleSearchActive() },
+                    onSearchClick = onSearchClick,
                     isGridView = state.isGridView,
                     onToggleGridView = { viewModel.toggleGridView() },
                     onMenuClick = onMenuClick
@@ -94,6 +103,20 @@ fun HomeScreen(
                         modifier = Modifier.fillMaxWidth().height(2.dp)
                     )
                 }
+            }
+        },
+        bottomBar = {
+            if (currentMusicSong != null) {
+                com.npplayer.feature.library.music.MusicMiniPlayer(
+                    song = currentMusicSong,
+                    isPlaying = isMusicPlaying,
+                    currentPositionMs = musicPositionMs,
+                    durationMs = musicDurationMs,
+                    onTogglePlayPause = { viewModel.toggleMusicPlayPause() },
+                    onSkipNext = { viewModel.skipMusicNext() },
+                    onSkipPrevious = { viewModel.skipMusicPrevious() },
+                    onOpenNowPlaying = onMusicClick
+                )
             }
         },
         floatingActionButton = {
@@ -130,8 +153,10 @@ fun HomeScreen(
                 selectedChip = state.selectedChip,
                 onChipSelect = { chip ->
                     when (chip) {
+                        HomeFilterChip.MUSIC -> onMusicClick()
                         HomeFilterChip.PRIVATE -> onPrivateClick()
                         HomeFilterChip.NETWORK -> onNetworkClick()
+                        HomeFilterChip.PLAYLISTS -> onPlaylistsClick()
                         else -> viewModel.selectChip(chip)
                     }
                 }
@@ -197,88 +222,47 @@ fun HomeScreen(
 
 @Composable
 private fun HomeTopAppBar(
-    isSearchActive: Boolean,
-    searchQuery: String,
-    onSearchQueryChange: (String) -> Unit,
-    onToggleSearch: () -> Unit,
+    onSearchClick: () -> Unit,
     isGridView: Boolean,
     onToggleGridView: () -> Unit,
     onMenuClick: () -> Unit
 ) {
     Surface(
-        modifier = Modifier.fillMaxWidth().height(64.dp),
+        modifier = Modifier.fillMaxWidth().statusBarsPadding().height(64.dp),
         color = MaterialTheme.colorScheme.background
     ) {
         Row(
             modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            if (isSearchActive) {
-                OutlinedTextField(
-                    value = searchQuery,
-                    onValueChange = onSearchQueryChange,
-                    placeholder = { Text("Search folders and videos...") },
-                    singleLine = true,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = NPYellow,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.outline
-                    ),
-                    trailingIcon = {
-                        IconButton(onClick = onToggleSearch) {
-                            Icon(Icons.Filled.Close, contentDescription = "Close Search")
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth()
+            NpLogo(
+                variant = NpLogoVariant.HORIZONTAL,
+                size = 32.dp,
+                modifier = Modifier.weight(1f)
+            )
+
+            IconButton(onClick = onSearchClick) {
+                Icon(
+                    imageVector = Icons.Outlined.Search,
+                    contentDescription = "Search",
+                    tint = MaterialTheme.colorScheme.onSurface
                 )
-            } else {
-                // Brand Emblem
-                Box(
-                    modifier = Modifier
-                        .size(36.dp)
-                        .background(color = NPYellow, shape = RoundedCornerShape(10.dp)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.PlayArrow,
-                        contentDescription = "NP",
-                        tint = NPBlack,
-                        modifier = Modifier.size(22.dp)
-                    )
-                }
+            }
 
-                Spacer(modifier = Modifier.width(12.dp))
-
-                Text(
-                    text = "NP Player",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onBackground,
-                    modifier = Modifier.weight(1f)
+            IconButton(onClick = onToggleGridView) {
+                Icon(
+                    imageVector = if (isGridView) Icons.AutoMirrored.Outlined.ViewList else Icons.Outlined.GridView,
+                    contentDescription = "Toggle Grid/List",
+                    tint = MaterialTheme.colorScheme.onSurface
                 )
+            }
 
-                IconButton(onClick = onToggleSearch) {
-                    Icon(
-                        imageVector = Icons.Outlined.Search,
-                        contentDescription = "Search",
-                        tint = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-
-                IconButton(onClick = onToggleGridView) {
-                    Icon(
-                        imageVector = if (isGridView) Icons.AutoMirrored.Outlined.ViewList else Icons.Outlined.GridView,
-                        contentDescription = "Toggle Grid/List",
-                        tint = MaterialTheme.colorScheme.onSurface
-                    )
-                }
-
-                IconButton(onClick = onMenuClick) {
-                    Icon(
-                        imageVector = Icons.Outlined.Menu,
-                        contentDescription = "Menu",
-                        tint = MaterialTheme.colorScheme.onSurface
-                    )
-                }
+            IconButton(onClick = onMenuClick) {
+                Icon(
+                    imageVector = Icons.Outlined.Menu,
+                    contentDescription = "Menu",
+                    tint = MaterialTheme.colorScheme.onSurface
+                )
             }
         }
     }
@@ -292,6 +276,7 @@ private fun HomeChipsRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .horizontalScroll(rememberScrollState())
             .padding(horizontal = 16.dp, vertical = 6.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {

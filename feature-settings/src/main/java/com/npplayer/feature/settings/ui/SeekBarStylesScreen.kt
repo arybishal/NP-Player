@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -51,7 +52,7 @@ fun SeekBarStylesScreen(
     Scaffold(
         topBar = {
             Surface(
-                modifier = Modifier.fillMaxWidth().height(64.dp),
+                modifier = Modifier.fillMaxWidth().statusBarsPadding().height(64.dp),
                 color = MaterialTheme.colorScheme.background
             ) {
                 Row(
@@ -184,6 +185,51 @@ fun SeekBarStylesScreen(
                     subtitle = "High-tech radial illumination halo and diffused light trail tailored for deep black screens.",
                     selected = state.selectedStyle == SeekBarStylePreference.GLOW,
                     onClick = { viewModel.selectStyle(SeekBarStylePreference.GLOW) }
+                )
+            }
+
+            item {
+                SeekBarStyleCard(
+                    title = "Neon Minimal",
+                    subtitle = "Ultra-thin 2dp hairline with glowing precision pip. Designed for pure cinema immersion.",
+                    selected = state.selectedStyle == SeekBarStylePreference.NEON_MINIMAL,
+                    onClick = { viewModel.selectStyle(SeekBarStylePreference.NEON_MINIMAL) }
+                )
+            }
+
+            item {
+                SeekBarStyleCard(
+                    title = "Gradient Flame",
+                    subtitle = "Golden-to-neon yellow gradient bar with capsule pill handle and dynamic trailing halo.",
+                    selected = state.selectedStyle == SeekBarStylePreference.GRADIENT_FLAME,
+                    onClick = { viewModel.selectStyle(SeekBarStylePreference.GRADIENT_FLAME) }
+                )
+            }
+
+            item {
+                SeekBarStyleCard(
+                    title = "Retro Blocks",
+                    subtitle = "Segmented digital LED ladder blocks that light up as playback advances, vintage synth style.",
+                    selected = state.selectedStyle == SeekBarStylePreference.RETRO_BLOCKS,
+                    onClick = { viewModel.selectStyle(SeekBarStylePreference.RETRO_BLOCKS) }
+                )
+            }
+
+            item {
+                SeekBarStyleCard(
+                    title = "Bubble Pop",
+                    subtitle = "Milestone bubble dots with a bouncy, animated double-ring bubble handle.",
+                    selected = state.selectedStyle == SeekBarStylePreference.BUBBLE_POP,
+                    onClick = { viewModel.selectStyle(SeekBarStylePreference.BUBBLE_POP) }
+                )
+            }
+
+            item {
+                SeekBarStyleCard(
+                    title = "AMOLED Pulse",
+                    subtitle = "Dynamic equalizer bars that dance to the rhythm of playback with a glowing diamond head.",
+                    selected = state.selectedStyle == SeekBarStylePreference.AMOLED_PULSE,
+                    onClick = { viewModel.selectStyle(SeekBarStylePreference.AMOLED_PULSE) }
                 )
             }
         }

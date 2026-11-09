@@ -44,8 +44,18 @@ class HomeViewModel @Inject constructor(
     private val folderDao: FolderDao,
     private val videoDao: VideoDao,
     private val scanner: MediaStoreScanner,
-    private val settingsRepository: SettingsRepository
+    private val settingsRepository: SettingsRepository,
+    val musicPlayerEngine: com.npplayer.player.music.MusicPlayerEngine
 ) : ViewModel() {
+
+    val currentSong = musicPlayerEngine.currentSong
+    val isMusicPlaying = musicPlayerEngine.isPlaying
+    val musicCurrentPositionMs = musicPlayerEngine.currentPositionMs
+    val musicDurationMs = musicPlayerEngine.durationMs
+
+    fun toggleMusicPlayPause() = musicPlayerEngine.togglePlayPause()
+    fun skipMusicNext() = musicPlayerEngine.skipToNext()
+    fun skipMusicPrevious() = musicPlayerEngine.skipToPrevious()
 
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = combine(

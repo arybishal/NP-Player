@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -66,7 +67,7 @@ fun AdvancedSettingsScreen(
     Scaffold(
         topBar = {
             Surface(
-                modifier = Modifier.fillMaxWidth().height(64.dp),
+                modifier = Modifier.fillMaxWidth().statusBarsPadding().height(64.dp),
                 color = MaterialTheme.colorScheme.background
             ) {
                 Row(
@@ -104,7 +105,7 @@ fun AdvancedSettingsScreen(
                 Text(
                     text = "Player Cache & Memory",
                     style = MaterialTheme.typography.labelLarge,
-                    color = NPYellow,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(top = 8.dp)
                 )
@@ -130,12 +131,18 @@ fun AdvancedSettingsScreen(
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
-                            Text(
-                                text = "${readAheadValue.toInt()} MB",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.ExtraBold,
+                            Surface(
+                                shape = RoundedCornerShape(6.dp),
                                 color = NPYellow
-                            )
+                            ) {
+                                Text(
+                                    text = "${readAheadValue.toInt()} MB",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = NPBlack,
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                )
+                            }
                         }
                         Text(
                             text = "Buffers upcoming media for smooth playback during high bitrates or network dips.",
@@ -178,12 +185,18 @@ fun AdvancedSettingsScreen(
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
-                            Text(
-                                text = "${backSeekValue.toInt()} MB",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.ExtraBold,
+                            Surface(
+                                shape = RoundedCornerShape(6.dp),
                                 color = NPYellow
-                            )
+                            ) {
+                                Text(
+                                    text = "${backSeekValue.toInt()} MB",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = NPBlack,
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                )
+                            }
                         }
                         Text(
                             text = "Keeps previously decoded frames in memory for instantaneous rewinds.",
@@ -211,7 +224,7 @@ fun AdvancedSettingsScreen(
                 Text(
                     text = "Player Engine Parameters",
                     style = MaterialTheme.typography.labelLarge,
-                    color = NPYellow,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontWeight = FontWeight.Bold
                 )
             }

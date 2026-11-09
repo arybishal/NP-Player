@@ -18,6 +18,7 @@ enum class PlayerAction(
     FRAMERATE_MEMC("framerate_memc", "MEMC Smoothing", "Frame-rate interpolation for smoother motion"),
     BATTERY_SAVER("battery_saver", "Battery Saver", "Optimizes decoding pipeline to extend battery life"),
     QUALITY_HD("quality_hd", "Quality / HD", "Stream quality and decoder resolution info"),
+    PICTURE_QUALITY("picture_quality", "Picture Quality", "Color tuning, brightness, contrast, saturation, and filters"),
     AUDIO_TRACK("audio_track", "Audio Track", "Switch between multi-language audio streams"),
     ASPECT_RATIO("aspect_ratio", "Aspect Ratio", "Toggle Fit, Fill, Stretch, 16:9, and 4:3"),
     PIP("pip", "Picture-in-Picture", "Minimizes video into floating corner window"),
@@ -49,6 +50,7 @@ data class PlayerControlsSlots(
         PlayerAction.SPEED
     ),
     val bottomRight: List<PlayerAction> = listOf(
+        PlayerAction.AUDIO_TRACK,
         PlayerAction.ASPECT_RATIO,
         PlayerAction.PIP,
         PlayerAction.ORIENTATION,

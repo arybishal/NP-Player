@@ -64,3 +64,22 @@ fun NPOutlinedButton(
         content = content
     )
 }
+
+@Composable
+fun NPSecondaryButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    shape: Shape = RoundedCornerShape(28.dp),
+    contentPadding: PaddingValues = PaddingValues(horizontal = 24.dp, vertical = 12.dp),
+    content: @Composable RowScope.() -> Unit
+) {
+    NPOutlinedButton(
+        onClick = onClick,
+        modifier = modifier,
+        enabled = enabled,
+        shape = shape,
+        contentPadding = contentPadding,
+        content = content
+    )
+}

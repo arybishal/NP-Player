@@ -8,3 +8,9 @@
 captures/
 .externalNativeBuild
 .cxx
+.kotlin/
+screen_*.png
+*.xml.dump
+ui_*.xml
+*.hprof
+*.pdf

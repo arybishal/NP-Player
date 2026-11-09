@@ -8,12 +8,18 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.npplayer.core.ui.component.NPRationaleScreen
+import com.npplayer.feature.library.music.MusicHomeScreen
 import com.npplayer.feature.library.ui.FolderDetailScreen
 import com.npplayer.feature.library.ui.HomeScreen
+import com.npplayer.feature.library.ui.PlaylistsScreen
+import com.npplayer.feature.library.ui.SearchScreen
 import com.npplayer.feature.network.ui.NetworkHubScreen
 import com.npplayer.feature.privatevault.ui.PrivateVaultScreen
 import com.npplayer.feature.settings.ui.AdvancedSettingsScreen
 import com.npplayer.feature.settings.ui.ControlsEditorScreen
+import com.npplayer.feature.settings.ui.HelpFaqScreen
+import com.npplayer.feature.settings.ui.LegalAboutScreen
+import com.npplayer.feature.settings.ui.MediaManagerScreen
 import com.npplayer.feature.settings.ui.MenuScreen
 import com.npplayer.feature.settings.ui.SeekBarStylesScreen
 import com.npplayer.feature.settings.ui.SettingsScreen
@@ -29,6 +35,12 @@ sealed class Screen(val route: String) {
     data object AdvancedSettings : Screen("advanced_settings")
     data object NetworkHub : Screen("network_hub")
     data object PrivateVault : Screen("private_vault")
+    data object Playlists : Screen("playlists")
+    data object MediaManager : Screen("media_manager")
+    data object HelpFaq : Screen("help_faq")
+    data object LegalAbout : Screen("legal_about")
+    data object Search : Screen("search")
+    data object Music : Screen("music")
 
     data object FolderDetail : Screen("folder_detail?folderPath={folderPath}&folderName={folderName}") {
         fun createRoute(folderPath: String, folderName: String): String {
@@ -38,11 +50,11 @@ sealed class Screen(val route: String) {
         }
     }
 
-    data object Player : Screen("player?videoPath={videoPath}&videoTitle={videoTitle}") {
-        fun createRoute(videoPath: String, videoTitle: String): String {
+    data object Player : Screen("player?videoPath={videoPath}&videoTitle={videoTitle}&isVault={isVault}") {
+        fun createRoute(videoPath: String, videoTitle: String, isVault: Boolean = false): String {
             val encodedPath = Uri.encode(videoPath)
             val encodedTitle = Uri.encode(videoTitle)
-            return "player?videoPath=$encodedPath&videoTitle=$encodedTitle"
+            return "player?videoPath=$encodedPath&videoTitle=$encodedTitle&isVault=$isVault"
         }
     }
 }
@@ -81,7 +93,22 @@ fun NPPlayerNavHost(
                 },
                 onNetworkClick = {
                     navController.navigate(Screen.NetworkHub.route)
+                },
+                onPlaylistsClick = {
+                    navController.navigate(Screen.Playlists.route)
+                },
+                onSearchClick = {
+                    navController.navigate(Screen.Search.route)
+                },
+                onMusicClick = {
+                    navController.navigate(Screen.Music.route)
                 }
+            )
+        }
+
+        composable(Screen.Music.route) {
+            MusicHomeScreen(
+                onBack = { navController.popBackStack() }
             )
         }
 
@@ -96,6 +123,21 @@ fun NPPlayerNavHost(
                 onBack = { navController.popBackStack() },
                 onVideoClick = { path, title ->
                     navController.navigate(Screen.Player.createRoute(path, title))
+                },
+                onSearchClick = {
+                    navController.navigate(Screen.Search.route)
+                }
+            )
+        }
+
+        composable(Screen.Search.route) {
+            SearchScreen(
+                onBack = { navController.popBackStack() },
+                onFolderClick = { path, name ->
+                    navController.navigate(Screen.FolderDetail.createRoute(path, name))
+                },
+                onPlayVideo = { path, title ->
+                    navController.navigate(Screen.Player.createRoute(path, title))
                 }
             )
         }
@@ -104,14 +146,17 @@ fun NPPlayerNavHost(
             route = Screen.Player.route,
             arguments = listOf(
                 navArgument("videoPath") { type = NavType.StringType; defaultValue = "" },
-                navArgument("videoTitle") { type = NavType.StringType; defaultValue = "" }
+                navArgument("videoTitle") { type = NavType.StringType; defaultValue = "" },
+                navArgument("isVault") { type = NavType.BoolType; defaultValue = false }
             )
         ) { backStackEntry ->
             val path = backStackEntry.arguments?.getString("videoPath") ?: ""
             val title = backStackEntry.arguments?.getString("videoTitle") ?: ""
+            val isVault = backStackEntry.arguments?.getBoolean("isVault") ?: false
             PlayerScreen(
                 videoPath = path,
                 videoTitle = title,
+                isVault = isVault,
                 onNavigateBack = { navController.popBackStack() }
             )
         }
@@ -121,7 +166,11 @@ fun NPPlayerNavHost(
                 onBack = { navController.popBackStack() },
                 onNavigateToSettings = { navController.navigate(Screen.Settings.route) },
                 onNavigateToPrivate = { navController.navigate(Screen.PrivateVault.route) },
-                onNavigateToNetwork = { navController.navigate(Screen.NetworkHub.route) }
+                onNavigateToNetwork = { navController.navigate(Screen.NetworkHub.route) },
+                onNavigateToPlaylists = { navController.navigate(Screen.Playlists.route) },
+                onNavigateToMediaManager = { navController.navigate(Screen.MediaManager.route) },
+                onNavigateToHelpFaq = { navController.navigate(Screen.HelpFaq.route) },
+                onNavigateToLegalAbout = { navController.navigate(Screen.LegalAbout.route) }
             )
         }
 
@@ -154,12 +203,48 @@ fun NPPlayerNavHost(
 
         composable(Screen.NetworkHub.route) {
             NetworkHubScreen(
-                onBack = { navController.popBackStack() }
+                onBack = { navController.popBackStack() },
+                onPlayStream = { url, title ->
+                    navController.navigate(Screen.Player.createRoute(url, title))
+                }
             )
         }
 
         composable(Screen.PrivateVault.route) {
             PrivateVaultScreen(
+                onBack = { navController.popBackStack() },
+                onPlayVideo = { path, title ->
+                    navController.navigate(Screen.Player.createRoute(path, title, isVault = true))
+                }
+            )
+        }
+
+        composable(Screen.Playlists.route) {
+            PlaylistsScreen(
+                onBack = { navController.popBackStack() },
+                onPlayVideo = { path, title ->
+                    navController.navigate(Screen.Player.createRoute(path, title))
+                }
+            )
+        }
+
+        composable(Screen.MediaManager.route) {
+            MediaManagerScreen(
+                onBack = { navController.popBackStack() },
+                onPlayVideo = { path, title ->
+                    navController.navigate(Screen.Player.createRoute(path, title))
+                }
+            )
+        }
+
+        composable(Screen.HelpFaq.route) {
+            HelpFaqScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.LegalAbout.route) {
+            LegalAboutScreen(
                 onBack = { navController.popBackStack() }
             )
         }

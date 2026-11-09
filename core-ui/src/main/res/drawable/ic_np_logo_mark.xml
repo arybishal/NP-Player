@@ -1,0 +1,14 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="512"
+    android:viewportHeight="512">
+    <!-- Vertical Bar (rx=18) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M 140,130 H 166 A 18,18 0 0 1 184,148 V 364 A 18,18 0 0 1 166,382 H 140 A 18,18 0 0 1 122,364 V 148 A 18,18 0 0 1 140,130 Z" />
+    <!-- Play Triangle with Rounded Apex -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M 232,150 Q 232,124 256,138 L 392,236 Q 412,256 392,276 L 256,374 Q 232,388 232,362 Z" />
+</vector>

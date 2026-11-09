@@ -33,7 +33,7 @@
             android:exported="true"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|smallestScreenSize"
             android:supportsPictureInPicture="true"
-            android:theme="@style/Theme.NPPlayer">
+            android:theme="@style/Theme.NPPlayer.Splash">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -46,7 +46,30 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:mimeType="video/*" />
             </intent-filter>
+
+            <!-- Audio file intent filter to play music from file managers -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:mimeType="audio/*" />
+            </intent-filter>
         </activity>
+
+        <!-- NP Player Music Home Widget Provider (4x1 & 2x2) -->
+        <receiver
+            android:name=".widget.NPPlayerMusicWidgetProvider"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.npplayer.widget.ACTION_PLAY_PAUSE" />
+                <action android:name="com.npplayer.widget.ACTION_PREV" />
+                <action android:name="com.npplayer.widget.ACTION_NEXT" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/music_widget_4x1_info" />
+        </receiver>
     </application>
 
 </manifest>

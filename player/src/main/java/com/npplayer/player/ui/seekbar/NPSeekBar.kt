@@ -11,6 +11,7 @@ fun NPSeekBar(
     durationMs: Long,
     bufferedPositionMs: Long = 0L,
     isPlaying: Boolean = false,
+    onScrubbing: (Boolean, Long) -> Unit = { _, _ -> },
     onSeek: (Long) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -20,6 +21,7 @@ fun NPSeekBar(
                 currentPositionMs = currentPositionMs,
                 durationMs = durationMs,
                 bufferedPositionMs = bufferedPositionMs,
+                onScrubbing = onScrubbing,
                 onSeek = onSeek,
                 modifier = modifier
             )
@@ -28,6 +30,7 @@ fun NPSeekBar(
             ChaptersSeekBar(
                 currentPositionMs = currentPositionMs,
                 durationMs = durationMs,
+                onScrubbing = onScrubbing,
                 onSeek = onSeek,
                 modifier = modifier
             )
@@ -37,6 +40,7 @@ fun NPSeekBar(
                 currentPositionMs = currentPositionMs,
                 durationMs = durationMs,
                 isPlaying = isPlaying,
+                onScrubbing = onScrubbing,
                 onSeek = onSeek,
                 modifier = modifier
             )
@@ -45,6 +49,53 @@ fun NPSeekBar(
             GlowSeekBar(
                 currentPositionMs = currentPositionMs,
                 durationMs = durationMs,
+                onScrubbing = onScrubbing,
+                onSeek = onSeek,
+                modifier = modifier
+            )
+        }
+        SeekBarStylePreference.NEON_MINIMAL -> {
+            NeonMinimalSeekBar(
+                currentPositionMs = currentPositionMs,
+                durationMs = durationMs,
+                onScrubbing = onScrubbing,
+                onSeek = onSeek,
+                modifier = modifier
+            )
+        }
+        SeekBarStylePreference.GRADIENT_FLAME -> {
+            GradientFlameSeekBar(
+                currentPositionMs = currentPositionMs,
+                durationMs = durationMs,
+                onScrubbing = onScrubbing,
+                onSeek = onSeek,
+                modifier = modifier
+            )
+        }
+        SeekBarStylePreference.RETRO_BLOCKS -> {
+            RetroBlocksSeekBar(
+                currentPositionMs = currentPositionMs,
+                durationMs = durationMs,
+                onScrubbing = onScrubbing,
+                onSeek = onSeek,
+                modifier = modifier
+            )
+        }
+        SeekBarStylePreference.BUBBLE_POP -> {
+            BubblePopSeekBar(
+                currentPositionMs = currentPositionMs,
+                durationMs = durationMs,
+                onScrubbing = onScrubbing,
+                onSeek = onSeek,
+                modifier = modifier
+            )
+        }
+        SeekBarStylePreference.AMOLED_PULSE -> {
+            AmoledPulseSeekBar(
+                currentPositionMs = currentPositionMs,
+                durationMs = durationMs,
+                isPlaying = isPlaying,
+                onScrubbing = onScrubbing,
                 onSeek = onSeek,
                 modifier = modifier
             )

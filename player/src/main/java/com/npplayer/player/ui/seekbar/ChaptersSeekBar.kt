@@ -26,6 +26,7 @@ fun ChaptersSeekBar(
     currentPositionMs: Long,
     durationMs: Long,
     chapterCount: Int = 5,
+    onScrubbing: (Boolean, Long) -> Unit = { _, _ -> },
     onSeek: (Long) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -42,36 +43,16 @@ fun ChaptersSeekBar(
         modifier = modifier
             .fillMaxWidth()
             .height(36.dp)
-            .pointerInput(durationMs) {
-                detectTapGestures { offset ->
-                    if (size.width > 0 && durationMs > 0) {
-                        var fraction = (offset.x / size.width).coerceIn(0f, 1f)
-                        fraction = snapToNearestChapter(fraction, chapterCount)
-                        onSeek((fraction * durationMs).toLong())
-                    }
-                }
-            }
-            .pointerInput(durationMs) {
-                detectDragGestures(
-                    onDragStart = { offset ->
-                        isDragging = true
-                        dragProgress = (offset.x / size.width).coerceIn(0f, 1f)
-                    },
-                    onDragEnd = {
-                        isDragging = false
-                        val snapped = snapToNearestChapter(dragProgress, chapterCount)
-                        onSeek((snapped * durationMs).toLong())
-                    },
-                    onDragCancel = {
-                        isDragging = false
-                    },
-                    onDrag = { change, _ ->
-                        change.consume()
-                        val raw = (change.position.x / size.width).coerceIn(0f, 1f)
-                        dragProgress = snapToNearestChapter(raw, chapterCount, threshold = 0.02f)
-                    }
-                )
-            }
+            .seekBarGestures(
+                durationMs = durationMs,
+                onScrubbing = { scrubbing, previewMs ->
+                    isDragging = scrubbing
+                    onScrubbing(scrubbing, previewMs)
+                },
+                onSeek = onSeek,
+                onDragProgressUpdate = { dragProgress = it },
+                transformProgress = { raw -> snapToNearestChapter(raw, chapterCount, threshold = 0.02f) }
+            )
     ) {
         val centerY = size.height / 2f
         val gapPx = 3.dp.toPx()

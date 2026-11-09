@@ -1,0 +1,18 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="512"
+    android:viewportHeight="512">
+    <!-- Brand Yellow Rounded Square Base (rx=116) -->
+    <path
+        android:fillColor="#FFD60A"
+        android:pathData="M 116,0 H 396 A 116,116 0 0 1 512,116 V 396 A 116,116 0 0 1 396,512 H 116 A 116,116 0 0 1 0,396 V 116 A 116,116 0 0 1 116,0 Z" />
+    <!-- Vertical Bar (rx=18) -->
+    <path
+        android:fillColor="#000000"
+        android:pathData="M 140,130 H 166 A 18,18 0 0 1 184,148 V 364 A 18,18 0 0 1 166,382 H 140 A 18,18 0 0 1 122,364 V 148 A 18,18 0 0 1 140,130 Z" />
+    <!-- Play Triangle with Rounded Apex -->
+    <path
+        android:fillColor="#000000"
+        android:pathData="M 232,150 Q 232,124 256,138 L 392,236 Q 412,256 392,276 L 256,374 Q 232,388 232,362 Z" />
+</vector>

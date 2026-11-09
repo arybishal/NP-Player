@@ -1,5 +1,6 @@
 package com.npplayer.feature.settings.ui
 
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -23,10 +25,13 @@ import androidx.compose.material.icons.outlined.ColorLens
 import androidx.compose.material.icons.outlined.Language
 import androidx.compose.material.icons.outlined.LinearScale
 import androidx.compose.material.icons.outlined.Memory
+import androidx.compose.material.icons.outlined.MusicNote
 import androidx.compose.material.icons.outlined.PlayCircleOutline
+import androidx.compose.material.icons.outlined.Restore
 import androidx.compose.material.icons.outlined.Subtitles
 import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -38,20 +43,26 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.npplayer.core.data.preferences.AppTheme
+import com.npplayer.core.data.preferences.AudioPreferences
+import com.npplayer.core.data.preferences.ResumePromptPreference
 import com.npplayer.core.ui.theme.NPBlack
 import com.npplayer.core.ui.theme.NPYellow
+import com.npplayer.player.ui.sheet.EqualizerBottomSheet
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     onBack: () -> Unit,
@@ -61,11 +72,12 @@ fun SettingsScreen(
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
 
     Scaffold(
         topBar = {
             Surface(
-                modifier = Modifier.fillMaxWidth().height(64.dp),
+                modifier = Modifier.fillMaxWidth().statusBarsPadding().height(64.dp),
                 color = MaterialTheme.colorScheme.background
             ) {
                 Row(
@@ -163,10 +175,19 @@ fun SettingsScreen(
 
             item {
                 SettingsActionRow(
+                    icon = Icons.Outlined.Tune,
+                    title = "Picture Quality & Presets",
+                    subtitle = "Preset: ${state.pictureSettings.activePreset.title} • GPU video effects",
+                    onClick = { viewModel.showPictureDialog() }
+                )
+            }
+
+            item {
+                SettingsActionRow(
                     icon = Icons.Outlined.Memory,
                     title = "Hardware Decoder",
-                    subtitle = "Acceleration mode: ${state.playerPreferences.hardwareAcceleration}",
-                    onClick = { /* Decoder selector */ }
+                    subtitle = "Mode: ${state.playerPreferences.hardwareAcceleration} • Codecs & Fallback",
+                    onClick = { viewModel.showDecoderDialog() }
                 )
             }
 
@@ -174,17 +195,38 @@ fun SettingsScreen(
                 SettingsActionRow(
                     icon = Icons.AutoMirrored.Outlined.VolumeUp,
                     title = "Audio & Equalizer",
-                    subtitle = "Audio boost, night mode, delay sync",
-                    onClick = { /* Audio settings */ }
+                    subtitle = "5-band EQ, bass boost, night mode, A/V sync",
+                    onClick = { viewModel.showEqualizerSheet() }
                 )
             }
 
             item {
+                val audioSummary = if (state.audioPreferences.rememberAudioTrack) "Remember track • Apply to folder" else "Track memory disabled"
+                SettingsActionRow(
+                    icon = Icons.AutoMirrored.Outlined.VolumeUp,
+                    title = "Audio Tracks & Memory",
+                    subtitle = audioSummary,
+                    onClick = { viewModel.showAudioPreferencesDialog() }
+                )
+            }
+
+            item {
+                val musicSummary = "Gapless, crossfade (${state.musicPreferences.crossfadeSec}s), LRCLIB lyrics & headset"
+                SettingsActionRow(
+                    icon = Icons.Outlined.MusicNote,
+                    title = "Music & Playback",
+                    subtitle = musicSummary,
+                    onClick = { viewModel.showMusicSettings() }
+                )
+            }
+
+            item {
+                val subText = "${if (state.subtitlePreferences.color == "YELLOW") "Yellow" else "White"} text • ${state.subtitlePreferences.sizeSp}sp"
                 SettingsActionRow(
                     icon = Icons.Outlined.Subtitles,
                     title = "Subtitles",
-                    subtitle = "Font size, position, yellow/white styling",
-                    onClick = { /* Subtitle settings */ }
+                    subtitle = subText,
+                    onClick = { viewModel.showSubtitleDialog() }
                 )
             }
 
@@ -193,11 +235,26 @@ fun SettingsScreen(
             }
 
             item {
+                val resumeLabel = when (state.resumePromptPreference) {
+                    ResumePromptPreference.ASK -> "Ask me (default)"
+                    ResumePromptPreference.ALWAYS_RESUME -> "Always resume"
+                    ResumePromptPreference.ALWAYS_START_OVER -> "Always start from the beginning"
+                }
+                SettingsActionRow(
+                    icon = Icons.Outlined.Restore,
+                    title = "When a video has a saved position",
+                    subtitle = resumeLabel,
+                    onClick = { viewModel.showResumePromptDialog() }
+                )
+            }
+
+            item {
+                val currentLangName = SupportedLanguages.firstOrNull { it.code.equals(state.appLanguage, ignoreCase = true) }?.nativeName ?: "English"
                 SettingsActionRow(
                     icon = Icons.Outlined.Language,
                     title = "App Language",
-                    subtitle = "English (default)",
-                    onClick = { /* Language dialog */ }
+                    subtitle = currentLangName,
+                    onClick = { viewModel.showLanguageDialog() }
                 )
             }
         }
@@ -208,6 +265,88 @@ fun SettingsScreen(
                 currentTheme = state.currentTheme,
                 onSelectTheme = { viewModel.setTheme(it) },
                 onDismiss = { viewModel.dismissThemeDialog() }
+            )
+        }
+
+        // Resume Prompt Dialog
+        if (state.isResumePromptDialogVisible) {
+            ResumePromptSettingDialog(
+                currentPreference = state.resumePromptPreference,
+                onSelectPreference = { viewModel.setResumePromptPreference(it) },
+                onDismiss = { viewModel.dismissResumePromptDialog() }
+            )
+        }
+
+        // Hardware Decoder Dialog
+        if (state.isDecoderDialogVisible) {
+            HardwareDecoderDialog(
+                currentMode = state.playerPreferences.hardwareAcceleration,
+                onSelectMode = { viewModel.setHardwareAcceleration(it) },
+                onDismiss = { viewModel.dismissDecoderDialog() }
+            )
+        }
+
+        // Equalizer Bottom Sheet
+        if (state.isEqualizerSheetVisible) {
+            EqualizerBottomSheet(
+                audioFxManager = viewModel.audioFxManager,
+                onDismiss = { viewModel.dismissEqualizerSheet() }
+            )
+        }
+
+        // Subtitle Settings Dialog
+        if (state.isSubtitleDialogVisible) {
+            SubtitleSettingsDialog(
+                preferences = state.subtitlePreferences,
+                onUpdatePreferences = { viewModel.updateSubtitlePreferences(it) },
+                onDismiss = { viewModel.dismissSubtitleDialog() }
+            )
+        }
+
+        // Language Selection Dialog
+        if (state.isLanguageDialogVisible) {
+            LanguageSelectionDialog(
+                currentLanguageCode = state.appLanguage,
+                onSelectLanguage = { viewModel.setAppLanguage(it) },
+                onDismiss = { viewModel.dismissLanguageDialog() }
+            )
+        }
+
+        // Picture Quality Settings Dialog
+        if (state.isPictureDialogVisible) {
+            PictureQualitySettingsDialog(
+                settings = state.pictureSettings,
+                onUpdateSettings = { viewModel.updatePictureSettings(it) },
+                onDismiss = { viewModel.dismissPictureDialog() }
+            )
+        }
+
+        // Audio Preferences Dialog
+        if (state.isAudioPreferencesDialogVisible) {
+            AudioPreferencesDialog(
+                preferences = state.audioPreferences,
+                onToggleRemember = { viewModel.toggleRememberAudioTrack(it) },
+                onToggleApplyToFolder = { viewModel.toggleApplyAudioToFolder(it) },
+                onResetRemembered = {
+                    viewModel.resetRememberedAudioTracks {
+                        Toast.makeText(context, "Remembered audio tracks reset", Toast.LENGTH_SHORT).show()
+                    }
+                },
+                onDismiss = { viewModel.dismissAudioPreferencesDialog() }
+            )
+        }
+
+        // Music Settings Sheet
+        if (state.isMusicSettingsVisible) {
+            val musicSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+            MusicSettingsSheet(
+                sheetState = musicSheetState,
+                preferences = state.musicPreferences,
+                onPreferencesChange = { viewModel.updateMusicPreferences(it) },
+                onClearLyricsCache = {
+                    Toast.makeText(context, "Lyrics cache cleared", Toast.LENGTH_SHORT).show()
+                },
+                onDismiss = { viewModel.dismissMusicSettings() }
             )
         }
     }
@@ -397,4 +536,167 @@ private fun ThemeOptionRow(
             color = MaterialTheme.colorScheme.onSurface
         )
     }
+}
+
+@Composable
+private fun ResumePromptSettingDialog(
+    currentPreference: ResumePromptPreference,
+    onSelectPreference: (ResumePromptPreference) -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = "When a video has a saved position",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+        },
+        text = {
+            Column {
+                ThemeOptionRow(
+                    label = "Ask me (default)",
+                    selected = currentPreference == ResumePromptPreference.ASK,
+                    onClick = { onSelectPreference(ResumePromptPreference.ASK) }
+                )
+                ThemeOptionRow(
+                    label = "Always resume",
+                    selected = currentPreference == ResumePromptPreference.ALWAYS_RESUME,
+                    onClick = { onSelectPreference(ResumePromptPreference.ALWAYS_RESUME) }
+                )
+                ThemeOptionRow(
+                    label = "Always start from the beginning",
+                    selected = currentPreference == ResumePromptPreference.ALWAYS_START_OVER,
+                    onClick = { onSelectPreference(ResumePromptPreference.ALWAYS_START_OVER) }
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text(text = "CANCEL", color = NPYellow, fontWeight = FontWeight.Bold)
+            }
+        },
+        shape = RoundedCornerShape(20.dp),
+        containerColor = MaterialTheme.colorScheme.surface
+    )
+}
+
+@Composable
+private fun AudioPreferencesDialog(
+    preferences: AudioPreferences,
+    onToggleRemember: (Boolean) -> Unit,
+    onToggleApplyToFolder: (Boolean) -> Unit,
+    onResetRemembered: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = "Audio Tracks & Memory",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f).padding(end = 12.dp)) {
+                        Text(
+                            text = "Remember audio track",
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = "Remembers chosen audio track for each video file",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Switch(
+                        checked = preferences.rememberAudioTrack,
+                        onCheckedChange = onToggleRemember,
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = NPBlack,
+                            checkedTrackColor = NPYellow,
+                            uncheckedThumbColor = MaterialTheme.colorScheme.outline,
+                            uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant
+                        )
+                    )
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f).padding(end = 12.dp)) {
+                        Text(
+                            text = "Apply to whole folder / series",
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.SemiBold,
+                            color = if (preferences.rememberAudioTrack) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+                        )
+                        Text(
+                            text = "Automatically select this audio language for subsequent episodes in the folder",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = if (preferences.rememberAudioTrack) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
+                        )
+                    }
+                    Switch(
+                        checked = preferences.applyToFolderSeries && preferences.rememberAudioTrack,
+                        onCheckedChange = onToggleApplyToFolder,
+                        enabled = preferences.rememberAudioTrack,
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = NPBlack,
+                            checkedTrackColor = NPYellow,
+                            uncheckedThumbColor = MaterialTheme.colorScheme.outline,
+                            uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant
+                        )
+                    )
+                }
+
+                Surface(
+                    onClick = onResetRemembered,
+                    shape = RoundedCornerShape(10.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant,
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(14.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Restore,
+                            contentDescription = null,
+                            tint = NPYellow,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Reset remembered audio tracks",
+                            color = MaterialTheme.colorScheme.onSurface,
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text(text = "DONE", color = NPYellow, fontWeight = FontWeight.Bold)
+            }
+        },
+        shape = RoundedCornerShape(20.dp),
+        containerColor = MaterialTheme.colorScheme.surface
+    )
 }

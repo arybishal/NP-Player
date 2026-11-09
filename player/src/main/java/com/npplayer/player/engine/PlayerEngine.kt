@@ -13,7 +13,11 @@ data class PlayerPlaybackState(
     val videoTitle: String = "",
     val videoPath: String = "",
     val isEnded: Boolean = false,
-    val isLoading: Boolean = false
+    val isLoading: Boolean = false,
+    val videoWidth: Int = 0,
+    val videoHeight: Int = 0,
+    val pixelWidthHeightRatio: Float = 1.0f,
+    val unappliedRotationDegrees: Int = 0
 )
 
 interface PlayerEngine {
@@ -22,7 +26,7 @@ interface PlayerEngine {
     fun play(path: String, title: String, startPositionMs: Long = 0L)
     fun pause()
     fun resume()
-    fun seekTo(positionMs: Long)
+    fun seekTo(positionMs: Long, reason: String = "SEEK")
     fun setPlaybackSpeed(speed: Float)
     fun setVolume(volume: Float)
     fun release()

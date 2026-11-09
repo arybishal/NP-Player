@@ -32,6 +32,7 @@ fun WaveSeekBar(
     currentPositionMs: Long,
     durationMs: Long,
     isPlaying: Boolean = false,
+    onScrubbing: (Boolean, Long) -> Unit = { _, _ -> },
     onSeek: (Long) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -63,33 +64,15 @@ fun WaveSeekBar(
         modifier = modifier
             .fillMaxWidth()
             .height(40.dp)
-            .pointerInput(durationMs) {
-                detectTapGestures { offset ->
-                    if (size.width > 0 && durationMs > 0) {
-                        val fraction = (offset.x / size.width).coerceIn(0f, 1f)
-                        onSeek((fraction * durationMs).toLong())
-                    }
-                }
-            }
-            .pointerInput(durationMs) {
-                detectDragGestures(
-                    onDragStart = { offset ->
-                        isDragging = true
-                        dragProgress = (offset.x / size.width).coerceIn(0f, 1f)
-                    },
-                    onDragEnd = {
-                        isDragging = false
-                        onSeek((dragProgress * durationMs).toLong())
-                    },
-                    onDragCancel = {
-                        isDragging = false
-                    },
-                    onDrag = { change, _ ->
-                        change.consume()
-                        dragProgress = (change.position.x / size.width).coerceIn(0f, 1f)
-                    }
-                )
-            }
+            .seekBarGestures(
+                durationMs = durationMs,
+                onScrubbing = { scrubbing, previewMs ->
+                    isDragging = scrubbing
+                    onScrubbing(scrubbing, previewMs)
+                },
+                onSeek = onSeek,
+                onDragProgressUpdate = { dragProgress = it }
+            )
     ) {
         val centerY = size.height / 2f
         val thumbX = size.width * displayProgress

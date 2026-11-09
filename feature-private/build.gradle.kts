@@ -42,6 +42,10 @@ dependencies {
     // Biometric
     implementation(libs.androidx.biometric)
 
+    // Coil
+    implementation(libs.coil.compose)
+    implementation(libs.coil.video)
+
     // Hilt
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
